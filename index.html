@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- PWA Config -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Noel Elegance">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/christmas-tree.png">
+    
+    <title>Aggregated Christmas Tree</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+      html, body, #root {
+        background-color: #000000 !important;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      /* Static Loader Styles */
+      #static-loader {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #000000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fbbf24; /* yellow-400 */
+        font-family: 'Cinzel', serif;
+        transition: opacity 0.5s ease-out;
+      }
+      .loader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #333;
+        border-top: 4px solid #fbbf24;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      /* New Indeterminate Progress Bar */
+      .loader-bar-container {
+        width: 200px;
+        height: 4px;
+        background-color: #333;
+        border-radius: 2px;
+        margin-top: 15px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loader-bar-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 30%;
+        background-color: #fbbf24;
+        animation: loading-bar 2s ease-in-out infinite;
+      }
+      
+      .reload-btn {
+        margin-top: 25px;
+        padding: 10px 20px;
+        background: transparent;
+        border: 1px solid #fbbf24;
+        color: #fbbf24;
+        font-family: 'Cinzel', serif;
+        cursor: pointer;
+        display: none; /* Hidden by default */
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      .reload-btn:hover {
+        background: rgba(251, 191, 36, 0.1);
+      }
+      
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      @keyframes loading-bar {
+        0% { left: -40%; width: 30%; }
+        50% { left: 40%; width: 60%; }
+        100% { left: 100%; width: 30%; }
+      }
+      
+      .error-msg {
+        color: #ef4444;
+        text-align: center;
+        max-width: 80%;
+        margin-top: 20px;
+        font-size: 12px;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "path": "https://esm.sh/path@^0.12.7",
+    "three/": "https://esm.sh/three@^0.182.0/",
+    "three": "https://esm.sh/three@^0.182.0",
+    "@mediapipe/tasks-vision": "https://esm.sh/@mediapipe/tasks-vision@^0.10.22-rc.20250304",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "url": "https://esm.sh/url@^0.11.4",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <!-- Static Loader visible immediately -->
+    <div id="static-loader">
+      <div class="loader-spinner" id="spinner"></div>
+      <div id="loader-text" style="letter-spacing: 0.2em; font-size: 14px;">INITIALIZING...</div>
+      <div class="loader-bar-container">
+        <div class="loader-bar-fill" id="loader-bar"></div>
+      </div>
+      <div id="error-log" class="error-msg"></div>
+      <button id="timeout-reload-btn" class="reload-btn" onclick="window.location.reload()">RELOAD SYSTEM</button>
+    </div>
+
+    <!-- Watchdog Script -->
+    <script>
+      (function() {
+        const TIMEOUT_MS = 60000; // 1 Minute Watchdog
+        
+        // Start the timer immediately
+        const timer = setTimeout(() => {
+          console.error("WATCHDOG: Initialization timed out after " + TIMEOUT_MS + "ms.");
+          
+          const loaderText = document.getElementById('loader-text');
+          const errorLog = document.getElementById('error-log');
+          const spinner = document.getElementById('spinner');
+          const bar = document.querySelector('.loader-bar-container');
+          const btn = document.getElementById('timeout-reload-btn');
+          
+          if (loaderText) loaderText.innerHTML = "INITIALIZATION TIMED OUT";
+          if (loaderText) loaderText.style.color = "#ef4444";
+          
+          if (errorLog) errorLog.innerText = "Possible causes:\n1. Network Blocked (Model Download)\n2. Camera Permission Ignored\n3. Hardware Acceleration Failed";
+          
+          // Hide processing animations
+          if (spinner) spinner.style.display = 'none';
+          if (bar) bar.style.display = 'none';
+          
+          // Show reload button
+          if (btn) btn.style.display = 'block';
+          
+        }, TIMEOUT_MS);
+
+        // Function for React App to call when it's ready
+        window.stopWatchdog = function() {
+          console.log("WATCHDOG: System healthy. Timer cancelled.");
+          clearTimeout(timer);
+        };
+      })();
+    </script>
+
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "short_name": "NoelTree",
+  "name": "Noel Elegance Interactive Tree",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/192/christmas-tree.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://img.icons8.com/color/512/christmas-tree.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#050805",
+  "background_color": "#050805",
+  "orientation": "landscape"
+}
